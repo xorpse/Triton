@@ -731,7 +731,7 @@ namespace triton {
   }
 
 
-  std::map<triton::uint64, triton::engines::symbolic::SharedSymbolicExpression> API::getSymbolicMemory(void) const {
+  boost::bimap<triton::uint64, triton::engines::symbolic::SharedSymbolicExpression> API::getSymbolicMemory(void) const {
     this->checkSymbolic();
     return this->symbolic->getSymbolicMemory();
   }

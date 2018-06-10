@@ -312,8 +312,8 @@ namespace triton {
         //! [**symbolic api**] - Returns the map of symbolic registers defined.
         TRITON_EXPORT std::map<triton::arch::registers_e, triton::engines::symbolic::SharedSymbolicExpression> getSymbolicRegisters(void) const;
 
-        //! [**symbolic api**] - Returns the map (<Addr : SymExpr>) of symbolic memory defined.
-        TRITON_EXPORT std::map<triton::uint64, triton::engines::symbolic::SharedSymbolicExpression> getSymbolicMemory(void) const;
+        //! [**symbolic api**] - Returns the bimap (<Addr : SymExpr>) of symbolic memory defined.
+        TRITON_EXPORT boost::bimap<triton::uint64, triton::engines::symbolic::SharedSymbolicExpression> getSymbolicMemory(void) const;
 
         //! [**symbolic api**] - Returns the shared symbolic expression corresponding to the memory address.
         TRITON_EXPORT triton::engines::symbolic::SharedSymbolicExpression getSymbolicMemory(triton::uint64 addr) const;

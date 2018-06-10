@@ -14,6 +14,8 @@
 #include <string>
 #include <unordered_map>
 
+#include <boost/bimap.hpp>
+
 #include <triton/architecture.hpp>
 #include <triton/ast.hpp>
 #include <triton/callbacks.hpp>
@@ -91,13 +93,13 @@ namespace triton {
            */
           mutable std::unordered_map<triton::usize, WeakSymbolicExpression> symbolicExpressions;
 
-          /*! \brief map of address -> symbolic expression
+          /*! \brief bimap of address <-> symbolic expression
            *
            * \details
            * **item1**: memory address<br>
            * **item2**: shared symbolic expression
            */
-          std::map<triton::uint64, SharedSymbolicExpression> memoryReference;
+          boost::bimap<triton::uint64, SharedSymbolicExpression> memoryReference;
 
           /*! \brief map of <address:size> -> symbolic expression.
            *
@@ -189,7 +191,7 @@ namespace triton {
           TRITON_EXPORT SharedSymbolicExpression getSymbolicMemory(triton::uint64 addr) const;
 
           //! Returns the map (addr:expr) of all symbolic memory defined.
-          TRITON_EXPORT const std::map<triton::uint64, SharedSymbolicExpression>& getSymbolicMemory(void) const;
+          TRITON_EXPORT const boost::bimap<triton::uint64, SharedSymbolicExpression>& getSymbolicMemory(void) const;
 
           //! Returns the shared symbolic expression corresponding to the parent register.
           TRITON_EXPORT const SharedSymbolicExpression& getSymbolicRegister(const triton::arch::Register& reg) const;

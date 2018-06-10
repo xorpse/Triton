@@ -199,7 +199,7 @@ namespace triton {
        * before symbolic processing.
        */
       void SymbolicEngine::concretizeMemory(triton::uint64 addr) {
-        this->memoryReference.erase(addr);
+        this->memoryReference.left.erase(addr);
         if (this->modes.isModeEnabled(triton::modes::ALIGNED_MEMORY))
           this->removeAlignedMemory(addr, BYTE_SIZE);
       }
@@ -269,9 +269,11 @@ namespace triton {
 
       /* Returns the reference memory if it's referenced otherwise returns nullptr */
       SharedSymbolicExpression SymbolicEngine::getSymbolicMemory(triton::uint64 addr) const {
-        auto it = this->memoryReference.find(addr);
-        if (it != this->memoryReference.end())
+        boost::bimap<triton::uint64, SharedSymbolicExpression>::left_map::const_iterator it;
+
+        if ((it = this->memoryReference.left.find(addr)) != this->memoryReference.left.end())
           return it->second;
+
         return nullptr;
       }
 
@@ -386,9 +388,6 @@ namespace triton {
       /* Removes the symbolic expression corresponding to the id */
       void SymbolicEngine::removeSymbolicExpression(triton::usize symExprId) {
         if (this->symbolicExpressions.find(symExprId) != this->symbolicExpressions.end()) {
-          /* Delete and remove the pointer */
-          this->symbolicExpressions.erase(symExprId);
-
           /* Concretize the register if it exists */
           for (triton::uint32 i = 0; i < this->numberOfRegisters; i++) {
             if (this->symbolicReg[i] != nullptr && this->symbolicReg[i]->getId() == symExprId) {
@@ -398,14 +397,15 @@ namespace triton {
           }
 
           /* Concretize the memory if it exists */
-          for (auto it = this->memoryReference.begin(); it != memoryReference.end(); it++) {
-            if (it->second && it->second->getId() == symExprId) {
-              this->concretizeMemory(it->first);
-              return;
-            }
+          const SharedSymbolicExpression& expr = this->getSymbolicExpressionFromId(symExprId);
+          boost::bimap<triton::uint64, SharedSymbolicExpression>::right_map::const_iterator it;
+          if ((it = this->memoryReference.right.find(expr)) != this->memoryReference.right.end()) {
+            this->concretizeMemory(it->second);
+            return;
           }
-          // FIXME: Also try to remove it from alignedMemory
-          // FIXME: Remove it from ast context too
+
+          /* Delete and remove the pointer */
+          this->symbolicExpressions.erase(symExprId);
         }
       }
 
@@ -532,7 +532,7 @@ namespace triton {
 
 
       /* Returns the map of symbolic memory defined */
-      const std::map<triton::uint64, SharedSymbolicExpression>& SymbolicEngine::getSymbolicMemory(void) const {
+      const boost::bimap<triton::uint64, SharedSymbolicExpression>& SymbolicEngine::getSymbolicMemory(void) const {
         return this->memoryReference;
       }
 
@@ -925,7 +925,13 @@ namespace triton {
 
       /* Adds and assign a new memory reference */
       void SymbolicEngine::addMemoryReference(triton::uint64 mem, const SharedSymbolicExpression& expr) {
-        this->memoryReference[mem] = expr;
+        boost::bimap<triton::uint64, SharedSymbolicExpression>::left_map::iterator it;
+
+        if ((it = this->memoryReference.left.find(mem)) != this->memoryReference.left.end()) {
+          this->memoryReference.left.erase(it);
+        }
+
+        this->memoryReference.insert(boost::bimap<triton::uint64, SharedSymbolicExpression>::value_type(mem, expr));
       }
 
 

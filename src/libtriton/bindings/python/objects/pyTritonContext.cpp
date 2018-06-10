@@ -1517,10 +1517,10 @@ namespace triton {
 
         try {
           if (addr == nullptr) {
-            auto regs = PyTritonContext_AsTritonContext(self)->getSymbolicMemory();
+            auto mems = PyTritonContext_AsTritonContext(self)->getSymbolicMemory();
 
             ret = xPyDict_New();
-            for (auto it = regs.begin(); it != regs.end(); it++) {
+            for (auto it = mems.left.begin(); it != mems.left.end(); it++) {
               xPyDict_SetItem(ret, PyLong_FromUint64(it->first), PySymbolicExpression(it->second));
             }
           }
